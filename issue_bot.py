@@ -1,5 +1,5 @@
 """
-매일 코딩 문제 2개를 GitHub Issues로 자동 등록
+매일 코테 문제 2개를 GitHub Issues로 자동 등록
 """
 
 import os
@@ -69,7 +69,7 @@ def generate_problem(day: int, problem_num: int, used_topics: list[str]) -> dict
 알고리즘 유형 한 줄 (예: 스택/단조스택)
 
 [제목]
-[코테] 문제 제목 - 핵심기법
+[코테] 문제제목 - 핵심기법
 
 [문제설명]
 2~3줄 이내
@@ -81,15 +81,15 @@ def generate_problem(day: int, problem_num: int, used_topics: list[str]) -> dict
 [출력조건]
 - 조건1
 
-[예시1]
-입력:
-출력:
-설명:
+[예제1]
+입력: 
+출력: 
+설명: 
 
-[예시2]
-입력:
-출력:
-설명:
+[예제2]
+입력: 
+출력: 
+설명: 
 """
         }]
     )
@@ -121,24 +121,24 @@ def parse_problem(raw: str, day: int, problem_num: int) -> dict:
 
 ---
 
-## 📋 문제 설명
+## 📌 문제 설명
 
 {sections.get("문제설명", "")}
 
-## 🟢 입력 조건
+## 🔢 입력 조건
 
 {sections.get("입력조건", "")}
 
-## 🔴 출력 조건
+## 📤 출력 조건
 
 {sections.get("출력조건", "")}
 
-## 🧪 예시
+## 🧪 예제
 
 ```
-{sections.get("예시1", "")}
+{sections.get("예제1", "")}
 
-{sections.get("예시2", "")}
+{sections.get("예제2", "")}
 ```
 
 ---
@@ -182,6 +182,54 @@ def create_issue(problem: dict):
         print(f"❌ 실패: {response.status_code} {response.text}")
 
 
+# ──────────────────────────────────────────
+# Java 풀이 템플릿 파일 자동 생성
+# ──────────────────────────────────────────
+
+def create_java_template(day: int, problem_num: int, problem: dict):
+    """
+    solutions/day{NN}/Day{N}_{M}.java 템플릿 파일을 GitHub에 자동 생성
+    """
+    day_str = str(day).zfill(2)  # 01, 02, ...
+    class_name = f"Day{day}_{problem_num}"
+    file_path = f"solutions/day{day_str}/{class_name}.java"
+
+    java_content = f"""// {problem['title']}
+// Day {day} - Problem {problem_num} | {datetime.now().strftime("%Y.%m.%d")}
+// 알고리즘 유형: {problem['topic']}
+
+import java.util.*;
+
+public class {class_name} {{
+    public static void main(String[] args) {{
+        Scanner scanner = new Scanner(System.in);
+
+        // TODO: 풀이 작성
+
+        scanner.close();
+    }}
+}}
+"""
+
+    # Base64 인코딩 (GitHub API 요구사항)
+    import base64
+    encoded = base64.b64encode(java_content.encode("utf-8")).decode("utf-8")
+
+    response = requests.put(
+        f"{GITHUB_API}/repos/{GITHUB_REPO}/contents/{file_path}",
+        headers=HEADERS,
+        json={
+            "message": f"feat: Day {day} Problem {problem_num} 풀이 템플릿 추가",
+            "content": encoded
+        }
+    )
+
+    if response.status_code in (200, 201):
+        print(f"✅ Java 템플릿 생성: {file_path}")
+    else:
+        print(f"❌ Java 파일 생성 실패: {response.status_code} {response.text}")
+
+
 def run():
     day = get_today_day()
     used_topics = get_used_topics()
@@ -196,8 +244,9 @@ def run():
         problem = generate_problem(day, i, used_topics)
         used_topics.append(problem["topic"])
         create_issue(problem)
+        create_java_template(day, i, problem)
 
-    print(f"\n🎉 완료! https://github.com/{GITHUB_REPO}/issues")
+    print(f"\n🏁 완료! https://github.com/{GITHUB_REPO}/issues")
 
 
 if __name__ == "__main__":
