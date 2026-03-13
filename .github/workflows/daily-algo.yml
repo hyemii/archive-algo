@@ -2,7 +2,7 @@ name: Daily Algo Issue
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # 매일 오전 9시 KST
+    - cron: "0 0 * * 1-5" # 월~금 오전 9시 KST (UTC 00:00)
   workflow_dispatch:
 
 jobs:
@@ -13,7 +13,7 @@ jobs:
 
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - run: pip install anthropic requests
 
