@@ -1,0 +1,26 @@
+name: Review Solution & Draft Blog
+
+on:
+  pull_request:
+    paths:
+      - 'solutions/**/*.java'  # solutions 폴더의 Java 파일 PR 시 자동 실행
+    types: [opened, synchronize]
+  workflow_dispatch:           # 수동 실행도 가능
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - run: pip install anthropic requests
+
+      - name: Run review bot
+        env:
+          ALGO_GITHUB_TOKEN: ${{ secrets.ALGO_GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python review_bot.py
