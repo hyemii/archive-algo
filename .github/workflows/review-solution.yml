@@ -1,0 +1,51 @@
+name: Review Solution & Draft Blog
+
+on:
+  pull_request:
+    paths:
+      - 'solutions/**/*.java'
+    types: [opened, synchronize, closed]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    # 봇이 단 코멘트(<!-- bot-comment --> 포함)는 무시 → 무한루프 방지
+    if: |
+      github.event_name == 'pull_request' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request != null &&
+       !contains(github.event.comment.body, '<!-- bot-comment -->'))
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic requests selenium webdriver-manager
+
+      - name: Install Chrome (머지 시 포스팅에 필요)
+        if: github.event.pull_request.merged == true
+        run: |
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+          sudo apt-get update -q
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Run review bot
+        env:
+          ALGO_GITHUB_TOKEN: ${{ secrets.ALGO_GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TISTORY_ID: ${{ secrets.TISTORY_ID }}
+          TISTORY_PW: ${{ secrets.TISTORY_PW }}
+          EVENT_NAME: ${{ github.event_name }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENT_PR_NUMBER: ${{ github.event.issue.number }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          MERGED_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: python review_bot.py

@@ -1,0 +1,24 @@
+name: Daily Algo Issue
+
+on:
+  schedule:
+    - cron: '0 0 * * 1-5'  # 평일 오전 9시 KST (UTC 00:00)
+  workflow_dispatch:         # 수동 실행 가능
+
+jobs:
+  create-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - run: pip install anthropic requests
+
+      - name: Run issue bot
+        env:
+          ALGO_GITHUB_TOKEN: ${{ secrets.ALGO_GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python issue_bot.py

@@ -1,0 +1,40 @@
+name: Post to Tistory
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: '포스팅할 PR 번호'
+        required: true
+        type: string
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic requests selenium webdriver-manager
+
+      - name: Install Chrome
+        run: |
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+          sudo apt-get update -q
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Post to Tistory
+        env:
+          ALGO_GITHUB_TOKEN: ${{ secrets.ALGO_GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TISTORY_ID: ${{ secrets.TISTORY_ID }}
+          TISTORY_PW: ${{ secrets.TISTORY_PW }}
+          PR_MERGED: "true"
+          MERGED_PR_NUMBER: ${{ inputs.pr_number }}
+          EVENT_NAME: "workflow_dispatch"
+        run: python review_bot.py
