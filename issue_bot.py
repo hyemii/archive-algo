@@ -33,7 +33,10 @@ def get_today_day() -> int:
         headers=HEADERS,
         params={"state": "all", "per_page": 100}
     )
-    return (len(response.json()) // 2) + 1
+    data = response.json()
+    if not isinstance(data, list):
+        return 1
+    return (len(data) // 2) + 1
 
 
 # ──────────────────────────────────────────
@@ -46,9 +49,15 @@ def get_used_topics() -> list[str]:
         headers=HEADERS,
         params={"state": "all", "per_page": 100}
     )
+    data = response.json()
+    if not isinstance(data, list):
+        print(f"⚠️ Issues API 응답 오류: {data}")
+        return []
     topics = []
-    for issue in response.json():
-        match = re.search(r"\*\*알고리즘 유형\*\*: (.+)", issue.get("body", ""))
+    for issue in data:
+        if not isinstance(issue, dict):
+            continue
+        match = re.search(r"\*\*알고리즘 유형\*\*: (.+)", issue.get("body", "") or "")
         if match:
             topics.append(match.group(1).strip())
     return topics
