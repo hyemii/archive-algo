@@ -7,9 +7,34 @@ import java.util.*;
 public class Day1_1 {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-
-        // TODO: 풀이 작성
-
+        String s = scanner.nextLine();
         scanner.close();
+
+        // 문자열 길이 체크
+        if (s.length() < 1 || s.length() > 100000) {
+            System.out.println("문자열 s의 길이는 1 ≤ s.length ≤ 100,000 입니다.");
+            return;
+        }
+
+        // 유효한 문자로만 구성됐는지 체크
+        for (char c : s.toCharArray()) {
+            if (c < 32 || c > 126) {
+                System.out.println("문자열은 영문 소문자, 대문자, 숫자, 공백, 특수문자로 구성됩니다.");
+                return;
+            }
+        }
+
+        List<Character> list = new ArrayList<>();
+        for (char c : s.toCharArray()) {
+            if (list.isEmpty() && list.size() == 0) {
+                list.add(c);
+            }
+
+            if (!list.contains(c)) {
+                list.add(c);
+            }
+        }
+
+        System.out.println("result: " + list.size());
     }
 }
