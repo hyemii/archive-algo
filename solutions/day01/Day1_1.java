@@ -32,9 +32,9 @@ public class Day1_1 {
                 continue;
             }
 
-            if (list.contains(currentC)) {
-                int idx = list.indexOf(currentC);
-                list = list.subList(idx, list.size() - 1);
+            int idx = list.indexOf(currentC);
+            if (idx > 0) {
+                list = new ArrayList<>(list.subList(idx + 1, list.size()));
             }
             
             list.add(currentC);
