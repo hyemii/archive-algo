@@ -33,7 +33,7 @@ public class Day1_1 {
             }
 
             int idx = list.indexOf(currentC);
-            if (idx > 0) {
+            if (idx >= 0) {
                 list = new ArrayList<>(list.subList(idx + 1, list.size()));
             }
             
