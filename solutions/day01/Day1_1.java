@@ -26,13 +26,18 @@ public class Day1_1 {
 
         List<Character> list = new ArrayList<>();
         for (char c : s.toCharArray()) {
+            Character currentC = c;
             if (list.isEmpty() && list.size() == 0) {
-                list.add(c);
+                list.add(currentC);
+                continue;
             }
 
-            if (!list.contains(c)) {
-                list.add(c);
+            if (list.contains(currentC)) {
+                int idx = list.indexOf(currentC);
+                list = list.subList(idx, list.size() - 1);
             }
+            
+            list.add(currentC);
         }
 
         System.out.println("result: " + list.size());
