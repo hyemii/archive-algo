@@ -24,22 +24,17 @@ public class Day1_1 {
             }
         }
 
+        int maxLen = 0;
         List<Character> list = new ArrayList<>();
         for (char c : s.toCharArray()) {
-            Character currentC = c;
-            if (list.isEmpty() && list.size() == 0) {
-                list.add(currentC);
-                continue;
-            }
-
-            int idx = list.indexOf(currentC);
+            int idx = list.indexOf(c);
             if (idx >= 0) {
                 list = new ArrayList<>(list.subList(idx + 1, list.size()));
             }
-            
-            list.add(currentC);
+            list.add(c);
+            maxLen = Math.max(maxLen, list.size()); // 매 스텝마다 최대값 갱신
         }
 
-        System.out.println("result: " + list.size());
+        System.out.println("result: " + maxLen);
     }
 }
