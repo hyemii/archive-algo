@@ -134,7 +134,7 @@ def generate_blog_draft(code: str, issue: dict) -> str:
 티스토리 기본 에디터에 바로 붙여넣을 수 있는 HTML이어야 합니다.
  
 [제목]
-**제목**
+<제목>
 [코테] 문제제목 - 핵심기법
 (예: [코테] 괄호 판별 - Stack에서 ArrayDeque로 성능 개선하기)
  
@@ -183,7 +183,7 @@ def generate_blog_draft(code: str, issue: dict) -> str:
 </table>
  
 [태그]
-**태그**
+<태그>
 tag1,tag2,tag3
  
 ---
@@ -300,8 +300,8 @@ def extract_post_content(draft: str) -> dict:
     """초안에서 제목, 본문, 태그 추출"""
  
     # ── 제목 추출 ──
-    # 패턴1: **제목** 섹션
-    m = re.search(r"\*\*제목\*\*:?\s*(.+)", draft)
+    # 패턴1: <제목> 섹션
+    m = re.search(r"\<제목\>:?\s*(.+)", draft)
     if m:
         title = m.group(1).strip()
     else:
@@ -326,8 +326,8 @@ def extract_post_content(draft: str) -> dict:
  
     # ── 태그 추출 ──
     raw_tags = ""
-    # 패턴1: **태그** 섹션
-    m = re.search(r"\*\*태그\*\*:?\s*(.+)", draft)
+    # 패턴1: <태그> 섹션
+    m = re.search(r"\<태그\>:?\s*(.+)", draft)
     if m:
         raw_tags = m.group(1).strip()
     else:
