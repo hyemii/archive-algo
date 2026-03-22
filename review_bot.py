@@ -37,7 +37,7 @@ client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 # ──────────────────────────────────────────
 # 1. PR 정보 수집
 # ──────────────────────────────────────────
-
+ 
 def get_open_prs() -> list[dict]:
     response = requests.get(
         f"{GITHUB_API}/repos/{GITHUB_REPO}/pulls",
@@ -45,8 +45,8 @@ def get_open_prs() -> list[dict]:
         params={"state": "open"}
     )
     return response.json()
-
-
+ 
+ 
 def get_pr_java_files(pr_number: int) -> list[dict]:
     response = requests.get(
         f"{GITHUB_API}/repos/{GITHUB_REPO}/pulls/{pr_number}/files",
@@ -60,13 +60,13 @@ def get_pr_java_files(pr_number: int) -> list[dict]:
                 "raw_url": f["raw_url"]
             })
     return files
-
-
+ 
+ 
 def get_file_content(raw_url: str) -> str:
     response = requests.get(raw_url, headers=HEADERS)
     return response.text
-
-
+ 
+ 
 def parse_file_info(filepath: str) -> dict:
     """solutions/day01/Day1_1.java → day=1, problem_num=1"""
     match = re.search(r"day(\d+)/Day(\d+)_(\d+)\.java", filepath)
@@ -76,12 +76,12 @@ def parse_file_info(filepath: str) -> dict:
         "day": int(match.group(1)),
         "problem_num": int(match.group(3))
     }
-
-
+ 
+ 
 # ──────────────────────────────────────────
 # 2. 연관 Issue 찾기
 # ──────────────────────────────────────────
-
+ 
 def find_issue(day: int, problem_num: int) -> dict:
     response = requests.get(
         f"{GITHUB_API}/repos/{GITHUB_REPO}/issues",
@@ -95,32 +95,32 @@ def find_issue(day: int, problem_num: int) -> dict:
            f"Problem {problem_num}" in issue.get("title", ""):
             return issue
     return {}
-
-
+ 
+ 
 # ──────────────────────────────────────────
 # 3. PR 코멘트 목록 조회
 # ──────────────────────────────────────────
-
+ 
 def get_pr_comments(pr_number: int) -> list[dict]:
     response = requests.get(
         f"{GITHUB_API}/repos/{GITHUB_REPO}/issues/{pr_number}/comments",
         headers=HEADERS
     )
     return response.json()
-
-
+ 
+ 
 def find_draft_comment(comments: list[dict]) -> dict:
     """봇이 작성한 블로그 초안 코멘트 찾기"""
     for c in comments:
         if BOT_TAG in c.get("body", "") and "블로그 글" in c.get("body", ""):
             return c
     return {}
-
-
+ 
+ 
 # ──────────────────────────────────────────
 # 4. Claude로 블로그 글 초안 생성
 # ──────────────────────────────────────────
-
+ 
 def generate_blog_draft(code: str, issue: dict) -> str:
     message = client.messages.create(
         model="claude-sonnet-4-20250514",
@@ -129,40 +129,40 @@ def generate_blog_draft(code: str, issue: dict) -> str:
             "role": "user",
             "content": f"""
 당신은 8년차 Java 백엔드 개발자의 코테 풀이를 리뷰하고 블로그 글을 작성하는 어시스턴트입니다.
-
+ 
 아래 형식을 정확히 따르세요. 마크다운이 아닌 **HTML 형식**으로 작성해주세요.
 티스토리 기본 에디터에 바로 붙여넣을 수 있는 HTML이어야 합니다.
-
+ 
 [제목]
 [코테] 문제제목 - 핵심기법
 (예: [코테] 괄호 판별 - Stack에서 ArrayDeque로 성능 개선하기)
-
+ 
 [본문]
 <h2>📌 문제 설명</h2>
 <p>(문제 내용)</p>
-
+ 
 <h2>🔢 입력 조건</h2>
 <ul>
   <li>(조건1)</li>
 </ul>
-
+ 
 <h2>📤 출력 조건</h2>
 <ul>
   <li>(조건1)</li>
 </ul>
-
+ 
 <h2>🧪 예제 입력 / 출력</h2>
 <pre><code>(예제)</code></pre>
-
+ 
 <h2>✍️ 직접 구현한 코드 (초기 버전)</h2>
 <pre><code class="language-java">(풀이 코드 그대로)</code></pre>
-
+ 
 <h2>❗ 개선 포인트</h2>
 <p>(현재 코드의 문제점과 개선 방향 3~5줄)</p>
-
+ 
 <h2>✨ 개선된 코드 (리팩토링 버전)</h2>
 <pre><code class="language-java">(리팩토링된 코드)</code></pre>
-
+ 
 <h2>💡 정리</h2>
 <table>
   <thead><tr><th>항목</th><th>개선 전</th><th>개선 후</th></tr></thead>
@@ -170,36 +170,37 @@ def generate_blog_draft(code: str, issue: dict) -> str:
     <tr><td>(항목)</td><td>(개선 전)</td><td>(개선 후)</td></tr>
   </tbody>
 </table>
-
+ 
 [태그]
 tag1,tag2,tag3
-
+ 
 ---
-
+ 
 문제 내용 (Issue):
 {issue.get("body", "")}
-
-제출한 풀이 코드: {code}
+ 
+제출한 풀이 코드:
+{code}
 """
         }]
     )
     return message.content[0].text
-
-
+ 
+ 
 # ──────────────────────────────────────────
 # 5. 코멘트 수정 요청 처리
 # ──────────────────────────────────────────
-
+ 
 def handle_comment_request(pr_number: int, user_request: str):
     print(f"💬 수정 요청 감지: {user_request}")
-
+ 
     comments = get_pr_comments(pr_number)
     draft_comment = find_draft_comment(comments)
-
+ 
     if not draft_comment:
         print("⚠️ 기존 초안 코멘트 없음")
         return
-
+ 
     message = client.messages.create(
         model="claude-sonnet-4-20250514",
         max_tokens=2500,
@@ -207,37 +208,37 @@ def handle_comment_request(pr_number: int, user_request: str):
             "role": "user",
             "content": f"""
 아래는 기존 블로그 글 초안입니다:
-
+ 
 {draft_comment["body"]}
-
+ 
 사용자의 수정 요청:
 {user_request}
-
+ 
 수정 요청 사항을 반영해서 해당 섹션만 수정해주세요.
 전체 초안을 다시 작성하지 말고, 수정된 부분만 보여주세요.
 """
         }]
     )
-
+ 
     reply_body = f"""{BOT_TAG}
 ## 🔄 수정본
-
+ 
 > 요청: {user_request}
-
+ 
 ---
-
+ 
 {message.content[0].text}
-
+ 
 ---
 *revised by Claude @ {datetime.now().strftime("%Y.%m.%d %H:%M")}*
 """
     post_pr_comment(pr_number, reply_body)
-
-
+ 
+ 
 # ──────────────────────────────────────────
 # 6. PR 코멘트 등록
 # ──────────────────────────────────────────
-
+ 
 def post_pr_comment(pr_number: int, body: str):
     response = requests.post(
         f"{GITHUB_API}/repos/{GITHUB_REPO}/issues/{pr_number}/comments",
@@ -248,24 +249,24 @@ def post_pr_comment(pr_number: int, body: str):
         print(f"✅ PR #{pr_number} 코멘트 등록 완료")
     else:
         print(f"❌ 코멘트 등록 실패: {response.status_code}")
-
-
+ 
+ 
 def format_pr_comment(draft: str, day: int, problem_num: int) -> str:
     return f"""{BOT_TAG}
 ## 🤖 블로그 글 초안 - Day {day} Problem {problem_num}
-
+ 
 > 아래 초안을 검토해주세요.
 > 수정이 필요하면 코멘트로 요청해주세요. (예: "개선 포인트 다시 써줘")
 > 최종 확인 후 PR을 머지하면 티스토리에 자동 포스팅됩니다.
-
+ 
 ---
-
+ 
 {draft}
-
+ 
 ---
-*generated by Claude @ {datetime.now().strftime("%Y.%m.%d %H:%M")}*
+*generated by Claude*
 """
-
+ 
 
 # ──────────────────────────────────────────
 # 7. 티스토리 자동 포스팅
