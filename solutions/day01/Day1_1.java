@@ -7,34 +7,7 @@ import java.util.*;
 public class Day1_1 {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        String s = scanner.nextLine();
+        
         scanner.close();
-
-        // 문자열 길이 체크
-        if (s.length() < 1 || s.length() > 100000) {
-            System.out.println("문자열 s의 길이는 1 ≤ s.length ≤ 100,000 입니다.");
-            return;
-        }
-
-        // 유효한 문자로만 구성됐는지 체크
-        for (char c : s.toCharArray()) {
-            if (c < 32 || c > 126) {
-                System.out.println("문자열은 영문 소문자, 대문자, 숫자, 공백, 특수문자로 구성됩니다.");
-                return;
-            }
-        }
-
-        int maxLen = 0;
-        List<Character> list = new ArrayList<>();
-        for (char c : s.toCharArray()) {
-            int idx = list.indexOf(c);
-            if (idx >= 0) {
-                list = new ArrayList<>(list.subList(idx + 1, list.size()));
-            }
-            list.add(c);
-            maxLen = Math.max(maxLen, list.size()); // 매 스텝마다 최대값 갱신
-        }
-
-        System.out.println("result: " + maxLen);
     }
 }
