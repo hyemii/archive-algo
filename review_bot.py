@@ -301,7 +301,7 @@ def extract_post_content(draft: str) -> dict:
  
     # ── 제목 추출 ──
     # 패턴1: <제목> 섹션
-    m = re.search(r"\<제목\>:?\s*(.+)", draft)
+    m = re.search(r"\*\*제목\*\*:?\s*(.+)", draft)
     if m:
         title = m.group(1).strip()
     else:
@@ -316,7 +316,7 @@ def extract_post_content(draft: str) -> dict:
  
     # ── 본문 추출 ──
     # 패턴1: [본문] ~ [태그]
-    m = re.search(r"\[본문\]\s*\n(.*?)\n\s*\[태그\]", draft, re.DOTALL)
+    m = re.search(r"\*\*본문\*\*\s*\n(.*?)\n\s*\*\*태그\*\*", draft, re.DOTALL)
     if m:
         content = m.group(1).strip()
     else:
@@ -327,7 +327,7 @@ def extract_post_content(draft: str) -> dict:
     # ── 태그 추출 ──
     raw_tags = ""
     # 패턴1: <태그> 섹션
-    m = re.search(r"\<태그\>:?\s*(.+)", draft)
+    m = re.search(r"\*\*태그\*\*:?\s*(.+)", draft)
     if m:
         raw_tags = m.group(1).strip()
     else:
